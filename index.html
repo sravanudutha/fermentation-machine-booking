@@ -37,7 +37,7 @@
             <label for="startup">Startup Name</label>
             <input type="text" id="startup" name="startup" required>
 
-            <!-- New Designation Field -->
+            <!-- Designation Field -->
             <label for="designation">Designation</label>
             <input type="text" id="designation" name="designation" required>
 
@@ -89,19 +89,25 @@
 
         function sendConfirmationEmail(userData) {
             const emailData = {
-                to: userData.email,
-                subject: "Fermentation Machine Booking Confirmation",
+                to: userData.email,  // User email from form
+                subject: "Fermentation Machine Booking Confirmation",  // Email subject
                 body: `Your booking for the fermentation machine is confirmed. Details:\n\nName: ${userData.name}\nStartup: ${userData.startup}\nDesignation: ${userData.designation}\nUsage: ${userData.usage}\nStart Time: ${userData.startTime}\nEnd Time: ${userData.endTime}`
             };
 
-            fetch("https://your-google-script-url", { 
+            // Replace this URL with your actual Google Apps Script web app URL
+            fetch("https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec", { 
                 method: "POST", 
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(emailData)
-            }).then(response => response.json())
-              .then(data => {
-                  alert("Your booking has been confirmed! We will send you an email.");
-              });
+                body: JSON.stringify(emailData)  // Send form data to Google Apps Script
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.result === "Slot unavailable, please choose another time.") {
+                    alert("Sorry, this slot is already booked. Please choose another time.");
+                } else {
+                    alert("Your booking has been confirmed! We will send you an email.");
+                }
+            });
         }
     </script>
 </body>
