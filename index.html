@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fermentation Machine Booking</title>
+
+    <!-- Link to Google Fonts (optional for styling) -->
+    <link href="https://fonts.googleapis.com/css2?family=Arial&display=swap" rel="stylesheet">
+
+    <!-- jQuery (for DOM manipulation and AJAX requests) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f9; }
         header { background-color: #4CAF50; color: white; padding: 10px 0; text-align: center; font-size: 24px; }
@@ -13,6 +20,7 @@
         .slot-container { margin-bottom: 15px; }
         button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; cursor: pointer; width: 100%; border-radius: 5px; }
         button:hover { background-color: #45a049; }
+        .slot-container div { margin: 5px 0; }
     </style>
 </head>
 <body>
@@ -46,6 +54,7 @@
         </form>
     </div>
 
+    <!-- JavaScript to handle slot generation, form submission, and email notifications -->
     <script>
         // Generate time slots dynamically based on the current date/time (12 hours from current time)
         function generateSlots() {
@@ -58,6 +67,7 @@
                 let slotTime = new Date(currentDate);
                 slotTime.setHours(hour);
 
+                // Create the slot label and checkbox
                 let slotLabel = document.createElement("label");
                 slotLabel.innerHTML = `${slotTime.getHours()}:${slotTime.getMinutes() === 0 ? "00" : slotTime.getMinutes()}`;
 
@@ -80,40 +90,4 @@
 
             const form = event.target;
             const selectedSlots = [];
-            form.querySelectorAll('input[name="slots"]:checked').forEach(slot => {
-                selectedSlots.push(slot.value);
-            });
-
-            const userData = {
-                name: form.name.value,
-                email: form.email.value,
-                startup: form.startup.value,
-                usage: form.usage.value,
-                slots: selectedSlots
-            };
-
-            sendConfirmationEmail(userData);
-        };
-
-        function sendConfirmationEmail(userData) {
-            const emailData = {
-                to: userData.email,
-                subject: "Fermentation Machine Booking Confirmation",
-                body: `Your booking for the fermentation machine is confirmed. Details:\n\nName: ${userData.name}\nStartup: ${userData.startup}\nUsage: ${userData.usage}\nSlots: ${userData.slots.join(', ')}`
-            };
-
-            fetch("https://your-google-script-url", { 
-                method: "POST", 
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(emailData)
-            }).then(response => response.json())
-              .then(data => {
-                  alert("Your booking has been confirmed! We will send you an email.");
-              });
-        }
-
-        // Initialize the page
-        generateSlots();
-    </script>
-</body>
-</html>
+            form.querySel
