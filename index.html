@@ -4,23 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fermentation Machine Booking</title>
-
+    
     <!-- Link to Google Fonts (optional for styling) -->
     <link href="https://fonts.googleapis.com/css2?family=Arial&display=swap" rel="stylesheet">
 
     <!-- jQuery (for DOM manipulation and AJAX requests) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
+
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f9; }
         header { background-color: #4CAF50; color: white; padding: 10px 0; text-align: center; font-size: 24px; }
         .container { padding: 20px; max-width: 600px; margin: 0 auto; background-color: white; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
         label { display: block; margin: 10px 0 5px; }
         input, select { width: 100%; padding: 8px; margin: 5px 0 15px; border: 1px solid #ccc; border-radius: 5px; }
-        .slot-container { margin-bottom: 15px; }
         button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; cursor: pointer; width: 100%; border-radius: 5px; }
         button:hover { background-color: #45a049; }
-        .slot-container div { margin: 5px 0; }
     </style>
 </head>
 <body>
@@ -45,49 +43,61 @@
                 <option value="bacterial-culture">Bacterial Culture</option>
             </select>
 
-            <div class="slot-container">
-                <label>Select Time Slots (12 hours from current time)</label>
-                <div id="slots"></div>
-            </div>
+            <!-- Start Date-Time Picker -->
+            <label for="start-time">Start Date and Time</label>
+            <input type="datetime-local" id="start-time" name="start-time" required>
+
+            <!-- End Date-Time Picker -->
+            <label for="end-time">End Date and Time</label>
+            <input type="datetime-local" id="end-time" name="end-time" required>
 
             <button type="submit">Submit Booking</button>
         </form>
     </div>
 
-    <!-- JavaScript to handle slot generation, form submission, and email notifications -->
     <script>
-        // Generate time slots dynamically based on the current date/time (12 hours from current time)
-        function generateSlots() {
-            const slotsDiv = document.getElementById("slots");
-            const currentDate = new Date();
-            const endTime = new Date(currentDate);
-            endTime.setHours(currentDate.getHours() + 12);  // 12-hour duration
-
-            for (let hour = currentDate.getHours(); hour < endTime.getHours(); hour++) {
-                let slotTime = new Date(currentDate);
-                slotTime.setHours(hour);
-
-                // Create the slot label and checkbox
-                let slotLabel = document.createElement("label");
-                slotLabel.innerHTML = `${slotTime.getHours()}:${slotTime.getMinutes() === 0 ? "00" : slotTime.getMinutes()}`;
-
-                let checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.name = "slots";
-                checkbox.value = slotTime.toISOString();
-                checkbox.id = `slot-${hour}`;
-
-                let div = document.createElement("div");
-                div.appendChild(checkbox);
-                div.appendChild(slotLabel);
-                slotsDiv.appendChild(div);
-            }
-        }
-
         // Handle form submission
         document.getElementById("booking-form").onsubmit = function(event) {
             event.preventDefault();
 
             const form = event.target;
-            const selectedSlots = [];
-            form.querySel
+            const startTime = new Date(form["start-time"].value);
+            const endTime = new Date(form["end-time"].value);
+
+            // Validate that the end time is after the start time
+            if (endTime <= startTime) {
+                alert("End time must be later than the start time.");
+                return;
+            }
+
+            const userData = {
+                name: form.name.value,
+                email: form.email.value,
+                startup: form.startup.value,
+                usage: form.usage.value,
+                startTime: startTime.toISOString(),
+                endTime: endTime.toISOString()
+            };
+
+            sendConfirmationEmail(userData);
+        };
+
+        function sendConfirmationEmail(userData) {
+            const emailData = {
+                to: userData.email,
+                subject: "Fermentation Machine Booking Confirmation",
+                body: `Your booking for the fermentation machine is confirmed. Details:\n\nName: ${userData.name}\nStartup: ${userData.startup}\nUsage: ${userData.usage}\nStart Time: ${userData.startTime}\nEnd Time: ${userData.endTime}`
+            };
+
+            fetch("https://your-google-script-url", { 
+                method: "POST", 
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(emailData)
+            }).then(response => response.json())
+              .then(data => {
+                  alert("Your booking has been confirmed! We will send you an email.");
+              });
+        }
+    </script>
+</body>
+</html>
