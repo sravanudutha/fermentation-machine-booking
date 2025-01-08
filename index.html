@@ -94,13 +94,11 @@
                 body: `Your booking for the fermentation machine is confirmed. Details:\n\nName: ${userData.name}\nStartup: ${userData.startup}\nDesignation: ${userData.designation}\nUsage: ${userData.usage}\nStart Time: ${userData.startTime}\nEnd Time: ${userData.endTime}`
             };
 
-            // Replace this URL with your actual Google Apps Script web app URL
+            // Using CORS Anywhere proxy to handle CORS
             fetch("https://script.google.com/macros/s/AKfycbwEOxeQvJUXuYRot8wc_mrFPwfNrnIxNx0lBtz9H07eT-XlH1XKWAIgsIiixZfWAUs8/exec", { 
                 method: "POST", 
                 headers: { 
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",  // Allow all origins, or restrict to your domain
-                    "Access-Control-Allow-Methods": "POST"
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify(emailData)  // Send form data to Google Apps Script
             })
