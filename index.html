@@ -37,6 +37,10 @@
             <label for="startup">Startup Name</label>
             <input type="text" id="startup" name="startup" required>
 
+            <!-- New Designation Field -->
+            <label for="designation">Designation</label>
+            <input type="text" id="designation" name="designation" required>
+
             <label for="usage">Usage</label>
             <select id="usage" name="usage" required>
                 <option value="cell-culture">Cell Culture</option>
@@ -74,6 +78,7 @@
                 name: form.name.value,
                 email: form.email.value,
                 startup: form.startup.value,
+                designation: form.designation.value,  // Collecting the Designation
                 usage: form.usage.value,
                 startTime: startTime.toISOString(),
                 endTime: endTime.toISOString()
@@ -86,7 +91,7 @@
             const emailData = {
                 to: userData.email,
                 subject: "Fermentation Machine Booking Confirmation",
-                body: `Your booking for the fermentation machine is confirmed. Details:\n\nName: ${userData.name}\nStartup: ${userData.startup}\nUsage: ${userData.usage}\nStart Time: ${userData.startTime}\nEnd Time: ${userData.endTime}`
+                body: `Your booking for the fermentation machine is confirmed. Details:\n\nName: ${userData.name}\nStartup: ${userData.startup}\nDesignation: ${userData.designation}\nUsage: ${userData.usage}\nStart Time: ${userData.startTime}\nEnd Time: ${userData.endTime}`
             };
 
             fetch("https://your-google-script-url", { 
