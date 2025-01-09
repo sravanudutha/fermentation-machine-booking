@@ -47,30 +47,108 @@
                 <option value="bacterial-culture">Bacterial Culture</option>
             </select>
 
-            <!-- Start Date-Time Picker -->
-            <label for="start-time">Start Date and Time</label>
-            <input type="datetime-local" id="start-time" name="start-time" required>
+            <!-- Available Days Dropdown -->
+            <label for="available-days">Select Available Day</label>
+            <select id="available-days" name="available-days" required>
+                <option value="">Select a day</option>
+            </select>
 
-            <!-- End Date-Time Picker -->
-            <label for="end-time">End Date and Time</label>
-            <input type="datetime-local" id="end-time" name="end-time" required>
+            <!-- Start and End Time Dropdowns -->
+            <label for="start-time">Select Start Time</label>
+            <select id="start-time" name="start-time" required>
+                <option value="">Select a start time</option>
+            </select>
+
+            <label for="end-time">Select End Time</label>
+            <select id="end-time" name="end-time" required>
+                <option value="">Select an end time</option>
+            </select>
 
             <button type="submit">Submit Booking</button>
         </form>
     </div>
 
     <script>
+        // Fetch available slots from Google Apps Script (via GET request)
+        function getAvailableDays() {
+            fetch("https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec", { 
+                method: "GET", 
+            })
+            .then(response => response.json())
+            .then(data => {
+                populateAvailableDays(data.availableDays);
+            })
+            .catch(error => {
+                console.error("Error fetching available days:", error);
+            });
+        }
+
+        // Populate available days dropdown
+        function populateAvailableDays(availableDays) {
+            const availableDaysDropdown = document.getElementById("available-days");
+            availableDays.forEach(day => {
+                const option = document.createElement("option");
+                option.value = day;
+                option.innerText = new Date(day).toLocaleDateString();
+                availableDaysDropdown.appendChild(option);
+            });
+        }
+
+        // Handle available day selection
+        document.getElementById("available-days").onchange = function() {
+            const selectedDay = this.value;
+            fetchAvailableTimeSlots(selectedDay);
+        };
+
+        // Fetch available time slots for selected day
+        function fetchAvailableTimeSlots(selectedDay) {
+            fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?selectedDay=${selectedDay}`, {
+                method: "GET"
+            })
+            .then(response => response.json())
+            .then(data => {
+                populateTimeSlots(data.timeSlots);
+            })
+            .catch(error => {
+                console.error("Error fetching time slots:", error);
+            });
+        }
+
+        // Populate available time slots dropdowns
+        function populateTimeSlots(timeSlots) {
+            const startTimeDropdown = document.getElementById("start-time");
+            const endTimeDropdown = document.getElementById("end-time");
+
+            // Clear previous options
+            startTimeDropdown.innerHTML = '<option value="">Select a start time</option>';
+            endTimeDropdown.innerHTML = '<option value="">Select an end time</option>';
+
+            timeSlots.forEach(timeSlot => {
+                const startOption = document.createElement("option");
+                startOption.value = timeSlot.start;
+                startOption.innerText = timeSlot.start;
+                startTimeDropdown.appendChild(startOption);
+
+                const endOption = document.createElement("option");
+                endOption.value = timeSlot.end;
+                endOption.innerText = timeSlot.end;
+                endTimeDropdown.appendChild(endOption);
+            });
+        }
+
+        // Fetch available days when the page loads
+        getAvailableDays();
+
         // Handle form submission
         document.getElementById("booking-form").onsubmit = function(event) {
             event.preventDefault();
 
             const form = event.target;
-            const startTime = new Date(form["start-time"].value);
-            const endTime = new Date(form["end-time"].value);
+            const startTime = form["start-time"].value;
+            const endTime = form["end-time"].value;
 
-            // Validate that the end time is after the start time
-            if (endTime <= startTime) {
-                alert("End time must be later than the start time.");
+            if (new Date(endTime) <= new Date(startTime)) {
+                alert("End time must be later than start time.");
                 return;
             }
 
@@ -78,10 +156,10 @@
                 name: form.name.value,
                 email: form.email.value,
                 startup: form.startup.value,
-                designation: form.designation.value,  // Collecting the Designation
+                designation: form.designation.value,
                 usage: form.usage.value,
-                startTime: startTime.toISOString(),
-                endTime: endTime.toISOString()
+                startTime: startTime,
+                endTime: endTime
             };
 
             sendConfirmationEmail(userData);
@@ -89,26 +167,19 @@
 
         function sendConfirmationEmail(userData) {
             const emailData = {
-                to: userData.email,  // User email from form
-                subject: "Fermentation Machine Booking Confirmation",  // Email subject
+                to: userData.email,
+                subject: "Fermentation Machine Booking Confirmation",
                 body: `Your booking for the fermentation machine is confirmed. Details:\n\nName: ${userData.name}\nStartup: ${userData.startup}\nDesignation: ${userData.designation}\nUsage: ${userData.usage}\nStart Time: ${userData.startTime}\nEnd Time: ${userData.endTime}`
             };
 
-            // Using CORS Anywhere proxy to handle CORS
-            fetch("https://cors-anywhere.herokuapp.com/https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbwEOxeQvJUXuYRot8wc_mrFPwfNrnIxNx0lBtz9H07eT-XlH1XKWAIgsIiixZfWAUs8/exec/exec"", { 
+            fetch("https://script.google.com/macros/s/AKfycbzoDODpQ53QXURjoy1pKmD6CvAOAcnv3bPAq4c_o9dBXS5mzzQ4Ay3sKLkNtqHvN_zs/exec", { 
                 method: "POST", 
-                headers: { 
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(emailData)  // Send form data to Google Apps Script
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(emailData)
             })
             .then(response => response.json())
             .then(data => {
-                if (data.result === "Slot unavailable, please choose another time.") {
-                    alert("Sorry, this slot is already booked. Please choose another time.");
-                } else {
-                    alert("Your booking has been confirmed! We will send you an email.");
-                }
+                alert("Your booking has been confirmed! We will send you an email.");
             })
             .catch(error => {
                 console.error('Error:', error);
